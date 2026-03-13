@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { QueryProvider } from '@/components/providers/query-provider'
+import { Toaster } from 'sonner'
 
 // 앱 메타데이터
 export const metadata: Metadata = {
@@ -14,7 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <QueryProvider>
+          {children}
+          <Toaster position="top-center" richColors />
+        </QueryProvider>
+      </body>
     </html>
   )
 }

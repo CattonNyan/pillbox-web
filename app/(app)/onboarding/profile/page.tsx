@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/store/user-store'
+import { upsertUserProfile } from '@/lib/api/users'
+import { toast } from 'sonner'
 
 // 프로필 폼 유효성 검사 스키마
 const profileSchema = z.object({
@@ -36,13 +38,15 @@ export default function OnboardingProfilePage() {
     },
   })
 
-  // 폼 제출 핸들러
-  const onSubmit = (data: ProfileFormValues) => {
-    setUser({
-      id: 'temp-id',
-      ...data,
-    })
-    router.push('/onboarding/preset-times')
+  // 폼 제출 핸들러 - Supabase upsert
+  const onSubmit = async (data: ProfileFormValues) => {
+    try {
+      await upsertUserProfile(data)
+      setUser({ id: '', ...data })
+      router.push('/onboarding/preset-times')
+    } catch {
+      toast.error('프로필 저장에 실패했습니다. 다시 시도해주세요.')
+    }
   }
 
   return (

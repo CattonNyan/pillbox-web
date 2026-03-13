@@ -1,8 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
-  "/(app)/pills/search/page": "app/(app)/pills/search/page.js",
-  "/(app)/pills/[itemSeq]/page": "app/(app)/pills/[itemSeq]/page.js",
-  "/(app)/calendar/page": "app/(app)/calendar/page.js",
-  "/(app)/schedules/new/page": "app/(app)/schedules/new/page.js"
-}

@@ -1,10 +1,31 @@
 'use client'
 
-import Link from 'next/link'
-import { Pill } from 'lucide-react'
+import { useState } from 'react'
+import { Pill, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 // 로그인 페이지
 export default function LoginPage() {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`,
+        },
+      })
+      if (error) throw error
+    } catch {
+      toast.error('로그인에 실패했습니다. 다시 시도해주세요.')
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
@@ -22,32 +43,21 @@ export default function LoginPage() {
           {/* 로그인 버튼 영역 */}
           <div className="space-y-3">
             {/* Google 로그인 버튼 */}
-            <button className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              {/* Google 아이콘 (텍스트로 대체) */}
-              <span className="w-5 h-5 flex items-center justify-center font-bold text-blue-500 text-lg leading-none">
-                G
-              </span>
+            <button
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+              ) : (
+                <span className="w-5 h-5 flex items-center justify-center font-bold text-blue-500 text-lg leading-none">
+                  G
+                </span>
+              )}
               Google로 로그인
             </button>
           </div>
-
-          {/* 구분선 */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs text-gray-400 bg-white px-2">
-              또는
-            </div>
-          </div>
-
-          {/* 개발용 바로가기 */}
-          <Link
-            href="/dashboard"
-            className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium text-green-600 border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
-          >
-            개발용 바로가기
-          </Link>
         </div>
 
         {/* 하단 안내 문구 */}

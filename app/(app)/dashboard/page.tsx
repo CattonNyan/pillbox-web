@@ -4,7 +4,8 @@ import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import Link from 'next/link'
 import { Plus, CheckCircle2, Circle } from 'lucide-react'
-import { useScheduleStore } from '@/store/schedule-store'
+import { useTodaySchedule, useToggleTaken } from '@/hooks/use-pill-histories'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { ScheduleItem } from '@/types'
 
@@ -21,7 +22,8 @@ const timeOrder: ScheduleItem['time'][] = ['morning', 'lunch', 'dinner', 'bedtim
 
 // 대시보드 페이지 - 오늘의 복약 현황
 export default function DashboardPage() {
-  const { schedules, toggleCheck } = useScheduleStore()
+  const { data: schedules = [], isLoading } = useTodaySchedule()
+  const toggleTaken = useToggleTaken()
 
   // 오늘 날짜 포맷
   const today = format(new Date(), 'M월 d일 (EEE)', { locale: ko })
@@ -39,6 +41,10 @@ export default function DashboardPage() {
     },
     {} as Record<string, ScheduleItem[]>
   )
+
+  const handleToggle = (item: ScheduleItem) => {
+    toggleTaken.mutate({ scheduleItemId: item.id, taken: !item.isChecked })
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
@@ -66,8 +72,24 @@ export default function DashboardPage() {
         <p className="text-xs text-gray-400 mt-2 text-right">{progressPercent}% 완료</p>
       </div>
 
+      {/* 로딩 상태 */}
+      {isLoading && (
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-xl" />
+          ))}
+        </div>
+      )}
+
+      {/* 복약 없음 */}
+      {!isLoading && totalCount === 0 && (
+        <div className="text-center py-10 text-gray-400">
+          <p className="text-sm">오늘 복약 일정이 없습니다.</p>
+        </div>
+      )}
+
       {/* 시간대별 복약 목록 */}
-      {timeOrder.map((time) => {
+      {!isLoading && timeOrder.map((time) => {
         const items = groupedSchedules[time]
         if (items.length === 0) return null
 
@@ -90,7 +112,8 @@ export default function DashboardPage() {
                 >
                   {/* 체크 버튼 */}
                   <button
-                    onClick={() => toggleCheck(item.id)}
+                    onClick={() => handleToggle(item)}
+                    disabled={toggleTaken.isPending}
                     className={cn(
                       'flex-shrink-0 transition-colors',
                       item.isChecked ? 'text-green-600' : 'text-gray-300 hover:text-gray-400'

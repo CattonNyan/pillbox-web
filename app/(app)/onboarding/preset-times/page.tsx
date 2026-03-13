@@ -6,6 +6,8 @@ import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { Clock } from 'lucide-react'
 import { useUserStore } from '@/store/user-store'
+import { updatePresetTimes } from '@/lib/api/users'
+import { toast } from 'sonner'
 
 // 시간 형식 유효성 검사 (HH:mm)
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/
@@ -47,11 +49,16 @@ export default function OnboardingPresetTimesPage() {
     },
   })
 
-  // 폼 제출 핸들러
-  const onSubmit = (data: PresetTimesFormValues) => {
-    setPresetTimes(data)
-    setOnboarded(true)
-    router.push('/dashboard')
+  // 폼 제출 핸들러 - Supabase update + is_onboarded = true
+  const onSubmit = async (data: PresetTimesFormValues) => {
+    try {
+      await updatePresetTimes(data, true)
+      setPresetTimes(data)
+      setOnboarded(true)
+      router.push('/dashboard')
+    } catch {
+      toast.error('시간 설정 저장에 실패했습니다. 다시 시도해주세요.')
+    }
   }
 
   return (

@@ -1,9 +1,18 @@
 import Header from '@/components/layout/Header'
 import Sidebar from '@/components/layout/Sidebar'
 import BottomNav from '@/components/layout/BottomNav'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
-// 앱 레이아웃 - 데스크탑: 사이드바, 모바일: 하단 네비게이션
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+// 앱 레이아웃 - 데스크탑: 사이드바, 모바일: 하단 네비게이션 (서버사이드 세션 확인)
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* 데스크탑 사이드바 */}
